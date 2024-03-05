@@ -1,0 +1,17 @@
+this
+is
+an
+example
+text
+for
+processing
+by
+the
+program
+we
+are
+checking
+how
+handles
+various
+sentences
