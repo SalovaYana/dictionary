@@ -3,24 +3,24 @@
 #include <fstream>
 #include <iostream>
 
-// Конструктор класса Dictionary, загружает словарь из файла
+
 Dictionary::Dictionary(const std::string& filename)
 {
-    std::ifstream file(filename); // Открываем файл для чтения
-    if (!file.is_open()) // Проверяем, удалось ли открыть файл
+    std::ifstream file(filename); 
+    if (!file.is_open()) 
     {
-        // Если не удалось открыть файл, выводим сообщение об ошибке
+        
         std::cerr << "Error opening dictionary file: " << filename << std::endl;
         return;
     }
 
     std::string word;
-    // Загрузка слов из файла в множество
-    while (file >> word) // Читаем слова из файла по одному
+   
+    while (file >> word) 
     {
-        words.insert(word); // Добавляем слово в множество
+        words.insert(word); 
     }
-    file.close(); // Закрываем файл
+    file.close(); 
 }
 
 
@@ -29,37 +29,34 @@ const std::set<std::string>& Dictionary::getWords() const
     return words;
 }
 
-// Проверяем, содержится ли слово в словаре
+
 bool Dictionary::contains(const std::string& word) const
 {
-    std::string lowerCaseWord = TextProcessor::toLowerCase(word); // Преобразуем слово к нижнему регистру
-    return words.find(lowerCaseWord) != words.end(); // Проверяем наличие слова в словаре
+    std::string lowerCaseWord = TextProcessor::toLowerCase(word); 
+    return words.find(lowerCaseWord) != words.end(); 
 }
 
 
-// Добавляем слово в словарь
 void Dictionary::insert(const std::string& word)
 {
-    words.insert(word); // Добавляем слово в множество
+    words.insert(word); 
 }
 
-// Сохраняем словарь в файл
+
 void Dictionary::saveToFile(const std::string& filename) const
 {
-    std::ofstream file(filename); // Открываем файл для записи
-    if (!file.is_open()) // Проверяем, удалось ли открыть файл
+    std::ofstream file(filename); 
+    if (!file.is_open()) 
     {
-        // Если не удалось открыть файл, выводим сообщение об ошибке
         std::cerr << "Error opening file for saving dictionary: " << filename << std::endl;
         return;
     }
 
-    // Сохранение слов из множества в файл
-    for (const auto& word : words) // Перебираем все слова в множестве
+    for (const auto& word : words) 
     {
-        file << word << std::endl; // Записываем каждое слово в файл
+        file << word << std::endl; 
     }
-    file.close(); // Закрываем файл
+    file.close(); 
 }
 
 

@@ -37,7 +37,7 @@ void TextProcessor::processText(const std::string& inputFilename,
             else
             {
                 // Если слово отсутствует в словаре, предлагаем пользователю действия
-                std::cout << "Word \"" << cleanedWord << "\" not found in dictionary."<< std::endl;
+                std::cout << std::endl << "Word \"" << cleanedWord << "\" not found in dictionary."<< std::endl;
                 std::cout << "What do you want to do? "<< std::endl;
                 std::cout << "1 --- Add to dictionary and keep, " << std::endl;
                 std::cout << "2 --- Keep without adding, "<< std::endl;
@@ -55,7 +55,7 @@ void TextProcessor::processText(const std::string& inputFilename,
                     break;
                 case 3:
                     // Заменяем слово на похожее из словаря, отличающееся на 1 символ
-                    replaceWithSimilar(cleanedWord, outputFile);
+                    replaceWithSimilar(lowercaseWord, outputFile);
                     break;
                 default:
                     std::cerr << "Invalid choice. Keeping word in output file." << std::endl;
@@ -104,61 +104,87 @@ bool TextProcessor::isOneCharDifference(const std::string& word1, const std::str
         const std::string& longerWord = (word1.length() > word2.length()) ? word1 : word2;
         const std::string& shorterWord = (word1.length() > word2.length()) ? word2 : word1;
         size_t i = 0, j = 0;
-        while (i < longerWord.length() && j < shorterWord.length()) 
+        while (i < longerWord.length() && j < shorterWord.length())
         {
-            if (longerWord[i] != shorterWord[j]) {
+            if (longerWord[i] != shorterWord[j])
+            {
                 ++diffCount;
                 if (diffCount > 1)
-                    return false; // Больше одной разницы - не подходит
-                ++i; // Двигаемся дальше в длинном слове
+                    return false;
+                if (longerWord.length() - i != shorterWord.length() - j)
+                    ++i; // Пропускаем символ только в более длинном слове
             }
-            else 
+            else
             {
-                ++i;
-                ++j;
+                ++i; ++j;
             }
         }
+        // Учитываем последний символ в более длинном слове
+        diffCount += longerWord.length() - i;
     }
     return diffCount == 1;
 }
 
-// Замена слова на похожее из словаря, отличающееся на 1 символ
 void TextProcessor::replaceWithSimilar(const std::string& word, std::ofstream& outputFile) const
 {
-    bool similarWordFound = false;
+    std::vector<std::string> similarWords;
     for (const std::string& dictWord : dictionary.getWords())
     {
         if (isOneCharDifference(word, dictWord))
         {
-            outputFile << dictWord << " "; // Записываем похожее слово в выходной файл
-            similarWordFound = true;
-            return;
+            similarWords.push_back(dictWord);
         }
     }
 
-    // Если похожее слово не найдено, сообщаем пользователю
-    std::cout << "Similar word not found for \"" << word << "\"." << std::endl;
-    std::cout << "What do you want to do? " << std::endl;
-    std::cout << "1 --- Add to dictionary and keep, " << std::endl;
-    std::cout << "2 --- Keep without adding, " << std::endl;
-    int choice;
-    std::cin >> choice;
-
-    // Принятие решения пользователем
-    switch (choice) 
+    if (similarWords.size() > 1)
     {
-    case 1:
-        // Добавляем слово в словарь и оставляем его
-        dictionary.insert(word);
-        outputFile << word << " ";
-        break;
-    case 2:
-        outputFile << word << " "; // Оставляем исходное слово без изменений
-        break;
-    default:
-        std::cerr << "Invalid choice. Keeping word unchanged." << std::endl;
-        outputFile << word << " "; // Оставляем исходное слово без изменений
-        break;
+        std::cout << std::endl << "Multiple similar words found for \"" << word << "\":" << std::endl;
+        for (size_t i = 0; i < similarWords.size(); ++i)
+        {
+            std::cout << i + 1 << " - " << similarWords[i] << std::endl;
+        }
+        std::cout << "Choose a word to replace (enter number): ";
+        int choice;
+        std::cin >> choice;
+        if (choice > 0 && choice <= similarWords.size())
+        {
+            outputFile << similarWords[choice - 1] << " ";
+        }
+        else
+        {
+            std::cerr << "Invalid choice. Keeping word unchanged." << std::endl;
+            outputFile << word << " ";
+        }
+    }
+    else if (!similarWords.empty())
+    {
+        outputFile << similarWords.front() << " "; // Если найдено только одно похожее слово
+    }
+    else
+    {
+
+        std::cout << "Similar word not found for \"" << word << "\"." << std::endl;
+        std::cout << "What do you want to do? " << std::endl;
+        std::cout << "1 --- Add to dictionary and keep, " << std::endl;
+        std::cout << "2 --- Keep without adding, " << std::endl;
+        int choice;
+        std::cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+            dictionary.insert(word);
+            outputFile << word << " ";
+            break;
+        case 2:
+            outputFile << word << " "; 
+            break;
+        default:
+            std::cerr << "Invalid choice. Keeping word unchanged." << std::endl;
+            outputFile << word << " "; 
+            break;
+        }
+    
     }
 }
 
